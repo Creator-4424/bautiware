@@ -7,7 +7,7 @@ pygame.mixer.init()
 pygame.mixer.music.load("music.mp3")   # put your file path here
 pygame.mixer.music.play(-1)  # -1 loops forever
 
-
+today = date.today()
 CONFIG = {
     "rotation_length": 8,
     "start_anchor": {"date": "2025-09-04", "cycle_day": 1},  # set yours
@@ -74,17 +74,7 @@ def day_status_and_order(target, cfg=CONFIG):
         return {"status": "Weekend", "order": None}
     cd = compute_cycle_day(target, cfg)
     return {"status": "Normal", "cycle_day": cd, "order": SCHEDULES.get(cd)}
-
-# --- demo ---
-if __name__ == "__main__":
-    today = date.today()
-    anchor_date, anchor_day = _anchor()
-
-    # How many school days since the anchor?
-    diff = school_days_between(anchor_date, today)
-    print(f"Anchor date: {anchor_date} (Cycle Day {anchor_day})")
-    print(f"School days since anchor: {diff}")
-
+def get_current_data():
     result = day_status_and_order(today)
     print(f"\nToday is {today}:")
     anchor_date = date.fromisoformat(CONFIG["start_anchor"]["date"])
@@ -96,6 +86,14 @@ if __name__ == "__main__":
         print(f"  Schedule: {result['order']}")
     else:
         print(f"  Status: {result['status']}")
+
+# --- demo ---
+if __name__ == "__main__":
+    anchor_date, anchor_day = _anchor()
+
+    # How many school days since the anchor?
+    diff = school_days_between(anchor_date, today)
+
     print("software ready")
     print(r"""⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⣮⠳⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢲⠀⠉⢣⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -145,5 +143,14 @@ if __name__ == "__main__":
                                                          """)
     print("welcome to bautiware V1.0")
     while True:
-        print("Actions:\n1: get current date data\n2: update anchor (Only if necessary)\n3: change music\n\nenter a date in YY-MM-DD format for specific data on that day")
-        input()
+        print("Actions:\n1: get current date data\n2: Get anchor data\n3: change music\n\nenter a date in YY-MM-DD format for specific data on that day")
+        action = input("Action: ")
+        if action == "1":
+            print(get_current_data())
+        elif action == "2":
+            print(f"Anchor date: {anchor_date} (Cycle Day {anchor_day})")
+            print(f"School days since anchor: {diff}")
+        elif action == "3":
+            print("what? you think im productive enough to add more than just the ultrakill terminal music? hell no. come back later for more music")
+        else:
+            pass
