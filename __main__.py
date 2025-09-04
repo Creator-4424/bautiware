@@ -1,11 +1,16 @@
 # simple_rotation.py
 from datetime import date, timedelta
 import pygame
-pygame.mixer.init()
+import platform
+import os
+from cls import clear
+from printf import printb
+from clear_last import clear_last_line
+import ascii as a
+import sys
+from time import sleep
 
-# load and play
-pygame.mixer.music.load("music.mp3")   # put your file path here
-pygame.mixer.music.play(-1)  # -1 loops forever
+pygame.mixer.init()
 
 today = date.today()
 CONFIG = {
@@ -153,72 +158,42 @@ def get_manual_date(d):
         print(f"Status: {result['status']}")
 
 # --- demo ---
-if __name__ == "__main__":
-    anchor_date, anchor_day = _anchor()
+anchor_date, anchor_day = _anchor()
 
-    # How many school days since the anchor?
-    diff = school_days_between(anchor_date, today)
+# How many school days since the anchor?
+diff = school_days_between(anchor_date, today)
 
-    print("software ready")
-    print(r"""⡎⣮⠳⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢲⠀⠉⢣⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢤⠀⠈⠣⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⣼⢣⣀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢤⠄⠀⠈⢂⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣱⣧⠞⢅⡿⢌⡆⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⡀⠀⠀⠈⠰⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣇⠸⠙⠯⡊⢑⡾⠁⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢷⠀⠀⠀⠈⣷⢱⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣶⡴⢁⢠⣿⣮⠇⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠇⣄⠀⠀⡇⠈⡌⠣⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⡍⠙⢿⣬⠟⠛⠁⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⡀⠀⠣⡉⡇⠀⣺⠀⣠⠞⣹⣶⡏⠲⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⣟⡿⠂⡰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⢠⠠⠤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠢⡤⢰⠉⢸⠁⢰⠁⣾⢫⠉⡝⣷⠈⡆⠀⠀⠀⠀⠀⠀⢀⠔⠉⠻⡿⠊⢀⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⡀⢰⡔⠀⠀⠀⠈⠁⠒⠒⠤⠤⣀⣀⠀⢀⣀⡀⠀⠀⠀⠀⠀⠀⠈⠛⠀⡇⠀⠘⡀⠻⣮⡤⣵⠟⢀⠇⠀⠀⠀⠀⢀⣀⣼⣆⡀⠀⠀⣶⡆⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠉⠑⠂⠤⣄⣀⠀⠀⠀⠀⠀⠀⠉⠙⠑⢄⠩⡑⠲⢦⠀⠀⠀⢸⣥⡇⠀⠀⠘⣄⣷⠀⣿⣨⠋⠀⠀⠀⢀⠔⠁⡠⠘⣿⡿⣶⢾⠙⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⢀⣉⣒⡢⢤⣀⣀⠀⠀⠈⠂⠥⡈⠢⢸⡆⠀⠀⡸⢟⠡⣕⠶⣶⣮⡿⠿⢿⣴⣶⠴⣀⢐⢍⠳⣮⢠⣤⠏⡠⠃⠸⣢⠏⠁⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀
-⠀⠀⠀⠀⣤⡤⡤⣼⡾⢦⡛⣦⠤⠭⠿⠿⠶⢖⠒⢚⣾⣍⠉⠉⣹⣖⣡⣾⡿⠉⠙⢠⠽⠭⠿⡔⠋⠁⢿⣦⡍⡢⢔⠈⠂⠤⠵⣤⠒⠒⠲⠲⠶⢒⡒⣦⠮⠴⣷⡧⣤⢤⣤
-⠀⠀⠀⠀⢧⢦⠧⣼⣇⣀⡁⣿⠈⢀⣒⣢⡀⠀⠑⢽⣿⡿⠉⠉⠷⣮⢻⣿⠀⠀⠀⠀⢠⠤⡄⠀⢀⣀⠈⣯⡣⡇⠠⢱⠀⠀⣀⠼⡠⡠⢒⢒⣒⡎⠁⢿⢃⣸⣸⡧⠴⡤⡼
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠀⠀⠈⠒⠓⠚⠉⠙⢍⢿⣟⢦⣙⣥⣨⢙⠷⠇⢸⣤⡇⠸⠾⡛⣅⣼⣮⠜⠃⢾⣍⠙⠤⠤⠜⠒⠒⠁⠀⠉⠉⠁⠀⠀⠉⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢀⡀⠀⠙⢞⣿⣿⣏⣯⢱⣶⣲⣿⣿⣽⣶⣶⡮⣿⠙⠌⡢⠀⠐⢌⢢⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡤⠔⢊⣁⣘⣈⠢⣀⠀⠀⢀⡴⣿⣻⢷⣿⣾⣿⣿⡿⣻⣟⠇⠀⠀⠈⢪⣑⡬⠛⠑⠢⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⠔⠚⠖⠬⠭⠽⠄⠀⠀⢘⢉⣹⣹⢞⡽⣯⢳⣿⠫⠿⠟⣿⡟⡼⢄⠀⠀⠀⠘⢄⠰⣄⠀⠀⡩⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡄⠾⠃⠀⠀⠀⠀⠀⠀⣀⣤⣴⡿⠟⠀⠀⠀⢸⣇⣠⡳⣧⣶⣶⢶⣼⢟⣄⣸⠆⠀⠀⠀⠀⠛⢦⢻⡞⣦⣳⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⡀⠤⠂⠉⠀⠀⠀⠀⣀⣠⠤⠖⠒⠉⠉⠀⣀⣀⣀⣀⡄⡞⠻⣿⣁⠈⢛⣒⠚⡁⣼⣯⢟⢂⢤⠀⠀⠀⠀⠀⠈⠓⢕⢇⣾⣿⣖⠒⠦⣤⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⢐⠂⣭⠀⠀⣀⣀⠤⠖⠒⠉⠉⠀⠀⠀⠀⠀⢠⠏⢁⠑⡭⠙⣇⢀⠀⠈⠻⣿⡔⠶⢀⣿⠟⠁⠀⡄⡿⠀⠀⠀⠀⠀⠀⠀⠀⠛⡿⣿⣿⣷⡖⢄⡵⠄⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠑⠒⠒⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡇⠴⠠⢊⠔⠚⡼⣦⡀⠀⠉⠸⡏⠀⢻⠇⠉⠀⢀⣤⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢜⡽⡿⡿⡇⣞⢄⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠆⠂⠐⠁⢰⠞⠧⣿⣻⠀⠀⠘⡇⠀⢸⠃⠀⠀⣿⣿⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠛⠛⡵⢕⣪⠟⠁⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠃⠀⠀⢀⣠⠇⠀⠀⠙⡿⠀⠀⠀⡇⠀⢸⡁⠀⠀⣿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⠃⠀⠀⢀⡎⠁⠀⠀⠀⠀⢸⡁⠀⠀⡇⠀⢸⠆⠀⢈⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⠃⠀⠀⡬⠋⠀⠀⠀⠀⠀⠀⠀⢧⠀⠀⡇⠀⢸⡁⠀⣼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠃⠀⢠⠼⠁⠀⠀⠀⠀⠀⠀⠀⢀⢸⡅⣠⢻⠀⡟⡅⢄⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⣃⢀⣠⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠉⠻⣿⢿⣾⣿⣿⠟⠉⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣋⣥⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡒⢆⡸⣿⣴⡾⠇⡸⢒⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠱⡘⢁⢠⠙⡄⡈⢃⠎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣗⠀⣹⠀⣏⠀⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⠀⣿⠀⣯⠀⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⣸⠀⣇⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢶⢚⣤⢸⢴⡇⡤⢓⡶⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠅⣿⣻⣿⢽⣿⠸⡁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡤⠒⠣⣎⣞⡫⠈⢝⣱⣱⠜⠒⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠓⠄⠤⠟⠁⠀⠀⠀⠀⠚⠠⠤⠼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-                                                       
-            ______  ___  _   _ _____ _____ _    _  ___  ______ _____ 
-            | ___ \/ _ \| | | |_   _|_   _| |  | |/ _ \ | ___ \  ___|
-            | |_/ / /_\ \ | | | | |   | | | |  | / /_\ \| |_/ / |__  
-            | ___ \  _  | | | | | |   | | | |/\| |  _  ||    /|  __| 
-            | |_/ / | | | |_| | | |  _| |_\  /\  / | | || |\ \| |___ 
-            \____/\_| |_/\___/  \_/  \___/ \/  \/\_| |_/\_| \_\____/ 
-                                                         
-                                                         """)
-    print("welcome to bautiware V1.1")
-    while True:
-        print("Actions:\n1: get current date data\n2: Get anchor data\n3: change music\n\nenter a date in YYYY-MM-DD format for specific data on that day")
-        action = input("Action: ")
-        if action == "1":
-            print(get_current_data())
-        elif action == "2":
-            print(f"Anchor date: {anchor_date} (Cycle Day {anchor_day})")
-            print(f"School days since anchor: {diff}")
-        elif action == "3":
-            print("what? you think im productive enough to add more than just the ultrakill terminal music? hell no. come back later for more music")
-        else:
-            try:
-                get_manual_date(action)
-            except ValueError:
-                print("invalid date or format")
+clear()
+print("Loading.", end="\r") # Overwrites same line
+sleep(0.6)
+print("Loading..", end="\r")
+sleep(0.6)
+print("Loading...", end="\r")
+sleep(1)
+
+printb("software ready")
+sleep(0.5)
+
+# load and play
+pygame.mixer.music.load("music.mp3")   # put your file path here
+pygame.mixer.music.play(-1)  # -1 loops forever
+
+print(a.main)
+
+print("welcome to bautiware V1.2")
+while True:
+    print("Actions:\n1: get current date data\n2: Get anchor data\n3: change music\n\nenter a date in YYYY-MM-DD format for specific data on that day")
+    action = input("Action: ")
+    if action == "1":
+        print(get_current_data())
+    elif action == "2":
+        print(f"Anchor date: {anchor_date} (Cycle Day {anchor_day})")
+        print(f"School days since anchor: {diff}")
+    elif action == "3":
+        clear()
+        print("what? you think im productive enough to add more than just the ultrakill terminal music? hell no. come back later for more music")
+    else:
+        try:
+            get_manual_date(action)
+        except ValueError:
+            print("invalid date or format")
