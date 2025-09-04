@@ -13,8 +13,8 @@ from time import sleep
 pygame.mixer.init()
 
 today = date.today()
-CONFIG = {
-    "rotation_length": 8,
+CONFIG = { # gonna have to manually update the config every year unfortunately
+    "rotation_length": 8, # 8 day rotation
     "start_anchor": {"date": "2025-09-04", "cycle_day": 1},  # first day of normal school, may be changed later
     "school_weekdays": {0, 1, 2, 3, 4},  # Indexes monday-friday (Mon=0)
     "holidays": [  # YYYY-MM-DD dates
@@ -32,7 +32,7 @@ CONFIG = {
         {"start":"2026-03-30", "end":"2026-04-03", "note":"spring break"}, # spring break
     ],
 
-    "half_days": {
+    "half_days": { # all half days, doesnt do anything yet
         "2025-09-17",
         "2025-10-15",
         "2025-11-19",
@@ -59,49 +59,46 @@ SCHEDULES = { # All schedule orders
     8: "FEHG",
 }
 
-def _in_range(d: date, start_iso: str, end_iso: str) -> bool:
+def _in_range(d: date, start_iso: str, end_iso: str) -> bool: # within a multi day holiday:
     # ISO (YYYY-MM-DD) compares lexicographically, but convert to be safe
     s = date.fromisoformat(start_iso); e = date.fromisoformat(end_iso)
     return s <= d <= e
 
-def _anchor(cfg=CONFIG):
+def _anchor(cfg=CONFIG): # gets the start anchor as a date object
     a = cfg["start_anchor"]
     return date.fromisoformat(a["date"]), int(a["cycle_day"])
 
-def is_weekend(d, cfg=CONFIG):
+def is_weekend(d, cfg=CONFIG): # checks if the day is a weekend
     return d.weekday() not in cfg["school_weekdays"]
 
-def is_holiday(d: date, cfg=CONFIG):
+def is_holiday(d: date, cfg=CONFIG): # checks for single day holidays and multi day holidays
     key = d.isoformat()
     
     # Check single-day holidays
-    for h in cfg.get("holidays", []):
-        if h["date"] == key:
+    for h in cfg.get("holidays", []): # for all holidays:
+        if h["date"] == key: # if it is today, then return necessary data
             return h.get("note", "Holiday")
     
-    # Check ranged holidays
-    for r in cfg.get("holiday_ranges", []):
+    # Check multi day holidays
+    for r in cfg.get("holiday_ranges", []): # same stuff basically
         if _in_range(d, r["start"], r["end"]):
             return r.get("note", "Holiday")
     
     return None
 
-def is_half_day(d, cfg=CONFIG):
+def is_half_day(d, cfg=CONFIG): # for half days
     return d.isoformat() in cfg.get("half_days", set())
 
-def is_school_day(d, cfg=CONFIG):
+def is_school_day(d, cfg=CONFIG): # for school days
     return not is_weekend(d, cfg) and not is_holiday(d, cfg)
 
-def school_days_between(start: date, end: date, cfg=CONFIG):
-    """
-    Count how many SCHOOL days between two dates (exclusive of start).
-    Assumes start <= end.
-    """
+def school_days_between(start: date, end: date, cfg=CONFIG): # counts how many school days since the anchor to a specified date
+
     cur = start
     count = 0
-    while cur < end:
+    while cur < end: # while its less than the end date: keep countin up
         cur += timedelta(days=1)
-        if is_school_day(cur, cfg):
+        if is_school_day(cur, cfg): # only count up if its a weekday (weekends dont avance the schedule)
             count += 1
     return count
 
@@ -156,6 +153,9 @@ def get_manual_date(d):
         print(f"Schedule: {result['order']}")
     else:
         print(f"Status: {result['status']}")
+def change_track(new_track):
+    pygame.mixer.music.load(f"music/track{new_track}.mp3")   # put your file path here
+    pygame.mixer.music.play(-1)  # -1 loops forever
 
 # --- demo ---
 anchor_date, anchor_day = _anchor()
@@ -175,7 +175,7 @@ printb("software ready")
 sleep(0.5)
 
 # load and play
-pygame.mixer.music.load("music.mp3")   # put your file path here
+pygame.mixer.music.load("music/track1.mp3")   # put your file path here
 pygame.mixer.music.play(-1)  # -1 loops forever
 
 print(a.main)
@@ -185,15 +185,20 @@ while True:
     print("Actions:\n1: get current date data\n2: Get anchor data\n3: change music\n\nenter a date in YYYY-MM-DD format for specific data on that day")
     action = input("Action: ")
     if action == "1":
-        print(get_current_data())
+        get_current_data()
     elif action == "2":
         print(f"Anchor date: {anchor_date} (Cycle Day {anchor_day})")
         print(f"School days since anchor: {diff}")
     elif action == "3":
         clear()
-        print("what? you think im productive enough to add more than just the ultrakill terminal music? hell no. come back later for more music")
+        printb("Choose some music: \n1. Take care by Heaven Pierce Her\n2. Silver Lighting by MathewTimes2\n3. sans. by Toby Fox\n")
+        new = input()
+        printb(f"playing new track...")
+        change_track(new)
+        sleep(1)
     else:
         try:
             get_manual_date(action)
         except ValueError:
             print("invalid date or format")
+    clear()
