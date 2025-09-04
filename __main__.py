@@ -1,5 +1,5 @@
 # simple_rotation.py
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, time
 import pygame
 import platform
 import os
@@ -127,7 +127,31 @@ def day_status_and_order(target, cfg=CONFIG):
         return {"status": "Half Day", "cycle_day": cd, "order": order}
 
     return {"status": "Normal", "cycle_day": cd, "order": order}
-
+def get_current_block():
+    now = datetime.now().time()
+    cd = compute_cycle_day(today)
+    order = SCHEDULES.get(cd)
+    if time(8,45) <= now <= time(10,5):
+        current = f"Block {order[0]}"
+    elif time(10,6) <= now <= time(10,54):
+        current = "Multipurpose time"
+    elif time(10,55) <= now <= time(12,14):
+        current = f"Block {order[1]}"
+    elif time(12,15) <= now <= time(13,4):
+        current = "Lunch"
+    elif time(13,5) <= now <= time(14,25):
+        current = f"Block {order[2]}"
+    elif time(14,26) <= now <= time(14,29):
+        current = "3-4 transition"
+    elif time(14,30) <= now <= time(15,50):
+        current = f"Block {order[3]}"
+    elif time(15,51) <= now <= time(15,59):
+        current = "ASA transition"
+    elif time(16) <= now <= time(17):
+        current = "ASAs in session"
+    else:
+        current = f"Out of schedule hours"
+    return current
 def get_current_data():
     result = day_status_and_order(today)
     print(f"\nToday is {today}:")
@@ -138,6 +162,7 @@ def get_current_data():
         print(f"Status: {result['status']}")
         print(f"Cycle Day: {result['cycle_day']}")
         print(f"Schedule: {result['order']}")
+        print(f"Period: {get_current_block()}")
     else:
         print(f"  Status: {result['status']}")
 def get_manual_date(d):
@@ -180,7 +205,7 @@ pygame.mixer.music.play(-1)  # -1 loops forever
 
 print(a.main)
 
-print("welcome to bautiware V1.2")
+print("welcome to bautiware V1.3")
 while True:
     print("Actions:\n1: get current date data\n2: Get anchor data\n3: change music\n\nenter a date in YYYY-MM-DD format for specific data on that day")
     action = input("Action: ")
