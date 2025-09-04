@@ -10,12 +10,36 @@ pygame.mixer.music.play(-1)  # -1 loops forever
 today = date.today()
 CONFIG = {
     "rotation_length": 8,
-    "start_anchor": {"date": "2025-09-04", "cycle_day": 1},  # set yours
+    "start_anchor": {"date": "2025-09-04", "cycle_day": 1},  # first day of normal school, may be changed later
     "school_weekdays": {0, 1, 2, 3, 4},  # Indexes monday-friday (Mon=0)
-    "holidays": {  # YYYY-MM-DD dates
-        "2025-10-12",
-        "2025-12-25",
+    "holidays": [  # YYYY-MM-DD dates
+        {"date":"2025-10-13", "note":"dia de la hispanidad"}, # dia de la hispanidad
+        {"date":"2025-11-10", "note":"3 day weekend"}, 
+        {"date":"2025-12-08", "note":"3 day weekend"},
+        {"date":"2026-05-01", "note":"3 day weekend"},
+        {"date":"2026-05-15", "note":"3 day weekend"},
+    ],
+
+    "holiday_ranges": [ # all holidays that are 3 or more days
+        {"start":"2025-11-27", "end":"2025-11-28", "note":"thanksgiving"}, # thanksgiving break
+        {"start":"2025-12-22", "end":"2026-01-07", "note":"winter break"}, # winter break
+        {"start":"2026-02-16", "end":"2026-02-20", "note":"la semana blanca"}, # la semana blanca
+        {"start":"2026-03-30", "end":"2026-04-03", "note":"spring break"}, # spring break
+    ],
+
+    "half_days": {
+        "2025-09-17",
+        "2025-10-15",
+        "2025-11-19",
+        "2025-12-10",
+        "2025-01-21",
+        "2025-02-25",
+        "2025-03-18",
+        "2025-04-08",
+        "2025-05-13",
+        "2025-06-10"
     },
+
     "carry_over": True,  # when this is true, weekends and holidays dont advance the schedule
 }
 
@@ -30,6 +54,11 @@ SCHEDULES = { # All schedule orders
     8: "FEHG",
 }
 
+def _in_range(d: date, start_iso: str, end_iso: str) -> bool:
+    # ISO (YYYY-MM-DD) compares lexicographically, but convert to be safe
+    s = date.fromisoformat(start_iso); e = date.fromisoformat(end_iso)
+    return s <= d <= e
+
 def _anchor(cfg=CONFIG):
     a = cfg["start_anchor"]
     return date.fromisoformat(a["date"]), int(a["cycle_day"])
@@ -37,8 +66,23 @@ def _anchor(cfg=CONFIG):
 def is_weekend(d, cfg=CONFIG):
     return d.weekday() not in cfg["school_weekdays"]
 
-def is_holiday(d, cfg=CONFIG):
-    return d.isoformat() in cfg["holidays"]
+def is_holiday(d: date, cfg=CONFIG):
+    key = d.isoformat()
+    
+    # Check single-day holidays
+    for h in cfg.get("holidays", []):
+        if h["date"] == key:
+            return h.get("note", "Holiday")
+    
+    # Check ranged holidays
+    for r in cfg.get("holiday_ranges", []):
+        if _in_range(d, r["start"], r["end"]):
+            return r.get("note", "Holiday")
+    
+    return None
+
+def is_half_day(d, cfg=CONFIG):
+    return d.isoformat() in cfg.get("half_days", set())
 
 def is_school_day(d, cfg=CONFIG):
     return not is_weekend(d, cfg) and not is_holiday(d, cfg)
@@ -68,12 +112,20 @@ def compute_cycle_day(target, cfg=CONFIG):
     return day if is_school_day(target, cfg) else None
 
 def day_status_and_order(target, cfg=CONFIG):
-    if is_holiday(target, cfg):
-        return {"status": "Holiday", "order": None}
+    holiday_note = is_holiday(target, cfg)
+    if holiday_note:
+        return {"status": "Holiday", "note": holiday_note, "order": None}
     if is_weekend(target, cfg):
         return {"status": "Weekend", "order": None}
+
     cd = compute_cycle_day(target, cfg)
-    return {"status": "Normal", "cycle_day": cd, "order": SCHEDULES.get(cd)}
+    order = SCHEDULES.get(cd)
+
+    if is_half_day(target, cfg):
+        return {"status": "Half Day", "cycle_day": cd, "order": order}
+
+    return {"status": "Normal", "cycle_day": cd, "order": order}
+
 def get_current_data():
     result = day_status_and_order(today)
     print(f"\nToday is {today}:")
@@ -81,11 +133,24 @@ def get_current_data():
     if anchor_date > today:
         print(f"WARNING: CURRENT DATE IS BEFORE ANCHOR, DATA UNRELIABLE")
     if result["status"] == "Normal":
-        print(f"  Status: {result['status']}")
-        print(f"  Cycle Day: {result['cycle_day']}")
-        print(f"  Schedule: {result['order']}")
+        print(f"Status: {result['status']}")
+        print(f"Cycle Day: {result['cycle_day']}")
+        print(f"Schedule: {result['order']}")
     else:
         print(f"  Status: {result['status']}")
+def get_manual_date(d):
+    anchor_date = date.fromisoformat(CONFIG["start_anchor"]["date"])
+    manual = date.fromisoformat(d)
+    result = day_status_and_order(manual)
+    if anchor_date > today:
+        print(f"WARNING: DATE IS BEFORE ANCHOR, DATA UNRELIABLE")
+    print(f"{manual} date info:")
+    if result["status"] == "Normal":
+        print(f"Status: {result['status']}")
+        print(f"Cycle Day: {result['cycle_day']}")
+        print(f"Schedule: {result['order']}")
+    else:
+        print(f"Status: {result['status']}")
 
 # --- demo ---
 if __name__ == "__main__":
@@ -95,7 +160,7 @@ if __name__ == "__main__":
     diff = school_days_between(anchor_date, today)
 
     print("software ready")
-    print(r"""⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⣮⠳⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    print(r"""⡎⣮⠳⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢲⠀⠉⢣⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢤⠀⠈⠣⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⣼⢣⣀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢤⠄⠀⠈⢂⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣱⣧⠞⢅⡿⢌⡆⠀⠀⠀⠀
@@ -141,9 +206,9 @@ if __name__ == "__main__":
             \____/\_| |_/\___/  \_/  \___/ \/  \/\_| |_/\_| \_\____/ 
                                                          
                                                          """)
-    print("welcome to bautiware V1.0")
+    print("welcome to bautiware V1.1")
     while True:
-        print("Actions:\n1: get current date data\n2: Get anchor data\n3: change music\n\nenter a date in YY-MM-DD format for specific data on that day")
+        print("Actions:\n1: get current date data\n2: Get anchor data\n3: change music\n\nenter a date in YYYY-MM-DD format for specific data on that day")
         action = input("Action: ")
         if action == "1":
             print(get_current_data())
@@ -153,4 +218,7 @@ if __name__ == "__main__":
         elif action == "3":
             print("what? you think im productive enough to add more than just the ultrakill terminal music? hell no. come back later for more music")
         else:
-            pass
+            try:
+                get_manual_date(action)
+            except ValueError:
+                print("invalid date or format")
