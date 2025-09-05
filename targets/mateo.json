@@ -1,0 +1,35 @@
+{
+    "Name": "mateo",
+    "A": [
+        "spanish",
+        "A110"
+    ],
+    "B": [
+        "math",
+        "A210"
+    ],
+    "C": [
+        "Wind ensemble",
+        "C103"
+    ],
+    "D": [
+        "Science",
+        "D113"
+    ],
+    "E": [
+        "English",
+        "A103"
+    ],
+    "F": [
+        "Jazz ensemble",
+        "C103"
+    ],
+    "G": [
+        "Social Studies",
+        "A118"
+    ],
+    "H": [
+        "PE",
+        "Gym"
+    ]
+}

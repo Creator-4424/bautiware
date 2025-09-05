@@ -1,0 +1,35 @@
+{
+    "Name": "Bauti",
+    "A": [
+        "Math",
+        "A211"
+    ],
+    "B": [
+        "Spanish",
+        "A110"
+    ],
+    "C": [
+        "Wind Ensemble",
+        "C103"
+    ],
+    "D": [
+        "Science",
+        "D113"
+    ],
+    "E": [
+        "Adv. Comp. Sci. ",
+        "D210"
+    ],
+    "F": [
+        "Social Studies",
+        "A118"
+    ],
+    "G": [
+        "English",
+        "A015"
+    ],
+    "H": [
+        "PE",
+        "Variable"
+    ]
+}
