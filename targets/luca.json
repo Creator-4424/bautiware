@@ -1,0 +1,35 @@
+{
+    "Name": "Luca",
+    "A": [
+        "Math",
+        "A207"
+    ],
+    "B": [
+        "English",
+        "A015"
+    ],
+    "C": [
+        "Orchestra",
+        "C202"
+    ],
+    "D": [
+        "Spanish",
+        "A104"
+    ],
+    "E": [
+        "Adv. CSE",
+        "D210"
+    ],
+    "F": [
+        "Social Studies",
+        "A118"
+    ],
+    "G": [
+        "PE",
+        "Gym"
+    ],
+    "H": [
+        "Science",
+        "D112"
+    ]
+}

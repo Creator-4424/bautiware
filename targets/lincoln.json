@@ -1,0 +1,35 @@
+{
+    "Name": "lincoln",
+    "A": [
+        "Science",
+        "D210"
+    ],
+    "B": [
+        "PE",
+        "Gym"
+    ],
+    "C": [
+        "Band",
+        "C201"
+    ],
+    "D": [
+        "3D Animation",
+        "C003"
+    ],
+    "E": [
+        "Math",
+        "A211"
+    ],
+    "F": [
+        "Social Studies",
+        "A118"
+    ],
+    "G": [
+        "Spanish",
+        "A104"
+    ],
+    "H": [
+        "English",
+        "A116"
+    ]
+}

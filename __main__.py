@@ -9,7 +9,7 @@ from clear_last import clear_last_line
 import ascii as a
 import sys
 from time import sleep
-
+import json
 pygame.mixer.init()
 
 today = date.today()
@@ -63,6 +63,11 @@ def _in_range(d: date, start_iso: str, end_iso: str) -> bool: # within a multi d
     # ISO (YYYY-MM-DD) compares lexicographically, but convert to be safe
     s = date.fromisoformat(start_iso); e = date.fromisoformat(end_iso)
     return s <= d <= e
+
+def load_from_file(filename):
+    with open(f"{filename}", "r") as f:
+        data = json.load(f)
+    return data
 
 def _anchor(cfg=CONFIG): # gets the start anchor as a date object
     a = cfg["start_anchor"]
@@ -129,30 +134,30 @@ def day_status_and_order(target, cfg=CONFIG):
     return {"status": "Normal", "cycle_day": cd, "order": order}
 def get_current_block():
     now = datetime.now().time()
-    cd = compute_cycle_day(today)
-    order = SCHEDULES.get(cd)
+    order = SCHEDULES.get(compute_cycle_day(today))
     if time(8,45) <= now <= time(10,5):
-        current = f"Block {order[0]}"
+        current = [f"Block {order[0]}", order[0]]
     elif time(10,6) <= now <= time(10,54):
-        current = "Multipurpose time"
+        current = ["Multipurpose time"]
     elif time(10,55) <= now <= time(12,14):
-        current = f"Block {order[1]}"
+        current = [f"Block {order[1]}", order[1]]
     elif time(12,15) <= now <= time(13,4):
-        current = "Lunch"
+        current = ["Lunch"]
     elif time(13,5) <= now <= time(14,25):
-        current = f"Block {order[2]}"
+        current = [f"Block {order[2]}", order[2]]
     elif time(14,26) <= now <= time(14,29):
-        current = "3-4 transition"
+        current = ["3-4 transition"]
     elif time(14,30) <= now <= time(15,50):
-        current = f"Block {order[3]}"
+        current = [f"Block {order[3]}", order[3]]
     elif time(15,51) <= now <= time(15,59):
-        current = "ASA transition"
+        current = ["ASA transition"]
     elif time(16) <= now <= time(17):
-        current = "ASAs in session"
+        current = ["ASAs in session"]
     else:
         current = f"Out of schedule hours"
     return current
 def get_current_data():
+    order = SCHEDULES.get(compute_cycle_day(today))
     result = day_status_and_order(today)
     print(f"\nToday is {today}:")
     anchor_date = date.fromisoformat(CONFIG["start_anchor"]["date"])
@@ -162,7 +167,11 @@ def get_current_data():
         print(f"Status: {result['status']}")
         print(f"Cycle Day: {result['cycle_day']}")
         print(f"Schedule: {result['order']}")
-        print(f"Period: {get_current_block()}")
+        print(f"Period: {get_current_block()[0]}")
+        if len(get_current_block()) > 1:
+            for entry in os.listdir("targets"):
+                data = load_from_file(f"targets/{entry}")
+                print(f"{data["Name"]} is in {data[get_current_block()[1]][0]}, in room {data[get_current_block()[1]][1]}")
     else:
         print(f"  Status: {result['status']}")
 def get_manual_date(d):
@@ -205,7 +214,7 @@ pygame.mixer.music.play(-1)  # -1 loops forever
 
 print(a.main)
 
-print("welcome to bautiware V1.3")
+print("welcome to bautiware V1.4")
 while True:
     print("Actions:\n1: get current date data\n2: Get anchor data\n3: change music\n\nenter a date in YYYY-MM-DD format for specific data on that day")
     action = input("Action: ")
