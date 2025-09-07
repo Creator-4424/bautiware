@@ -43,49 +43,52 @@ def _load_user(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
 
-def build_class_roster(current_letter: str, order: str) -> list[str]:
+def build_class_roster(current_letter: str | None, order: str) -> list[str]:
     """
     Returns lines like:
     'Name — CurrentClass (Room 101) → Next: NextClass (Room 202)'
+    Works even when current_letter is None (e.g., Lunch).
     """
     lines = []
     if not USERS_DIR.exists():
         return lines
 
-    # Figure out the next letter in today's order
-    next_letter = None
+    # If we have a current block, find the next letter normally
     if current_letter and order:
         try:
             idx = order.index(current_letter)
             next_letter = order[(idx + 1) % len(order)]
         except ValueError:
             next_letter = None
+    else:
+        # If there's no active block, just pick the first block after "now"
+        next_letter = order[0] if order else None
 
-    # Go through every user JSON and grab their current + next classes
+    # Loop through every user
     for p in sorted(USERS_DIR.glob("*.json"), key=lambda x: x.stem.lower()):
         try:
             data = _load_user(p)
             name = data.get("Name", p.stem).strip()
 
-            # Current block info
-            cls, room = data.get(current_letter, [None, None])
+            # Current class info if possible
+            if current_letter:
+                cls, room = data.get(current_letter, [None, None])
+                current_info = f"{cls} (Room {room})" if cls else "<no class data>"
+            else:
+                current_info = "—"
 
-            # Next block info (if it exists)
+            # Next class info if possible
             if next_letter:
                 next_cls, next_room = data.get(next_letter, [None, None])
                 next_info = f" → Next: {next_cls} (Room {next_room})" if next_cls else " → Next: Free"
             else:
                 next_info = ""
 
-            if cls:
-                lines.append(f"{name} — {cls} (Room {room}){next_info}")
-            else:
-                lines.append(f"{name} — <no class data>{next_info}")
+            lines.append(f"{name} — {current_info}{next_info}")
         except Exception as e:
             lines.append(f"{p.stem} — <error: {e}>")
 
     return lines
-
 
 # ---------- commands ----------
 @tree.command(name="schedule", description="Show schedule status; default = today.")
