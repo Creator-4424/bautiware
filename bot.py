@@ -1,7 +1,7 @@
 # bot.py — Bautiware Discord bot
 from __future__ import annotations
 import os
-from datetime import date, datetime
+from datetime import date, datetime, time
 from pathlib import Path
 import discord
 from discord import app_commands
@@ -30,7 +30,7 @@ USERS_DIR = Path("users")
 
 # ---------- helpers ----------
 def parse_date(s: str | None) -> date:
-    return date.fromisoformat(s) if s else date.today()
+    return date.fromisoformat(s) if s else date(2025,9,5)
 
 def list_usernames() -> list[str]:
     if not USERS_DIR.exists():
@@ -128,7 +128,7 @@ async def period(inter: discord.Interaction):
         return
 
     order = res["order"]
-    label, letter, next_letter = get_current_block(order, now=datetime.now().time())
+    label, letter, next_letter = get_current_block(order, now=time(14,20))
 
     # If it's Lunch/ASA/etc. there is no block letter
     header = (
