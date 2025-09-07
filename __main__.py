@@ -280,4 +280,4 @@ while True:
                 sleep(.5)
                 clear()
         else:
-            printb(f"{jsonToCustomFormat(f"users/{action}.json")}",0.02)
+            printb(f"{jsonToCustomFormat(f'users/{action}.json')}", 0.02)
