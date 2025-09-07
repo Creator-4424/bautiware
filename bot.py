@@ -5,7 +5,7 @@ from datetime import date, datetime
 from pathlib import Path
 import discord
 from discord import app_commands
-
+import json
 # load .env locally (Railway uses env vars directly, this is harmless)
 try:
     from dotenv import load_dotenv  # optional
@@ -37,35 +37,54 @@ def list_usernames() -> list[str]:
         return []
     return sorted(p.stem.lower() for p in USERS_DIR.glob("*.json"))
 
+USERS_DIR = Path("users")
 
-# ---------- lifecycle ----------
-@bot.event
-async def on_ready():
-    """Sync slash commands (instantly if DISCORD_GUILD_ID is set) and keep heartbeat logs."""
-    try:
-        gid = os.getenv("DISCORD_GUILD_ID")
-        if gid:
-            guild = discord.Object(id=int(gid))
-            # copy any global cmds to guild (optional) then sync for instant availability
-            tree.copy_global_to(guild=guild)
-            synced = await tree.sync(guild=guild)
-            print(f"[sync] Guild {gid}: {len(synced)} cmds")
-        else:
-            synced = await tree.sync()
-            print(f"[sync] Global: {len(synced)} cmds (may take up to 1h to appear)")
+def _load_user(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as f:
+        return json.load(f)
 
-        print(f"Logged in as {bot.user} (id={bot.user.id})")
+def build_class_roster(current_letter: str, order: str) -> list[str]:
+    """
+    Returns lines like:
+    'Name — CurrentClass (Room 101) → Next: NextClass (Room 202)'
+    """
+    lines = []
+    if not USERS_DIR.exists():
+        return lines
 
-        # heartbeat so Railway logs show the process is alive
-        import asyncio
-        async def heartbeat():
-            while True:
-                print("[heartbeat] alive")
-                await asyncio.sleep(60)
-        bot.loop.create_task(heartbeat())
+    # Figure out the next letter in today's order
+    next_letter = None
+    if current_letter and order:
+        try:
+            idx = order.index(current_letter)
+            next_letter = order[(idx + 1) % len(order)]
+        except ValueError:
+            next_letter = None
 
-    except Exception as e:
-        print("[on_ready error]", repr(e))
+    # Go through every user JSON and grab their current + next classes
+    for p in sorted(USERS_DIR.glob("*.json"), key=lambda x: x.stem.lower()):
+        try:
+            data = _load_user(p)
+            name = data.get("Name", p.stem).strip()
+
+            # Current block info
+            cls, room = data.get(current_letter, [None, None])
+
+            # Next block info (if it exists)
+            if next_letter:
+                next_cls, next_room = data.get(next_letter, [None, None])
+                next_info = f" → Next: {next_cls} (Room {next_room})" if next_cls else " → Next: Free"
+            else:
+                next_info = ""
+
+            if cls:
+                lines.append(f"{name} — {cls} (Room {room}){next_info}")
+            else:
+                lines.append(f"{name} — <no class data>{next_info}")
+        except Exception as e:
+            lines.append(f"{p.stem} — <error: {e}>")
+
+    return lines
 
 
 # ---------- commands ----------
@@ -95,11 +114,14 @@ async def schedule(inter: discord.Interaction, when: str | None = None):
     await inter.followup.send(msg)
 
 
-@tree.command(name="period", description="Show the current period for today.")
+@tree.command(name="period", description="Show the current period for today, plus everyone’s class.")
 async def period(inter: discord.Interaction):
     await inter.response.defer(thinking=True)
-    d = date(2025,9,5)
+
+    d = date.today()
     res = day_status_and_order(d)
+
+    # Not a normal school day
     if res["status"] != "Normal":
         note = f" — {res.get('note')}" if "note" in res else ""
         await inter.followup.send(f"{d}: **{res['status']}**{note}")
@@ -107,11 +129,42 @@ async def period(inter: discord.Interaction):
 
     order = res["order"]
     label, letter, next_letter = get_current_block(order, now=datetime.now().time())
-    extra = f" (Block {letter})" if letter else ""
-    await inter.followup.send(
-        f"{d}\nStatus: **Normal**\nCycle Day: **{res['cycle_day']}**\n"
-        f"Order: **{order}**\nCurrent: **{label}**{extra}"
+
+    # If it's Lunch/ASA/etc. there is no block letter
+    header = (
+        f"**{d}**\n"
+        f"Status: **Normal**  •  Cycle Day: **{res['cycle_day']}**  •  Order: **{order}**\n"
+        f"Current: **{label}**" + (f" (Block {letter})" if letter else "")
     )
+
+    if not letter:
+        await inter.followup.send(header + "\n\n_No active class block right now._")
+        return
+
+    # Build roster for the current block
+    roster = build_class_roster(letter,order)
+
+    if not roster:
+        await inter.followup.send(header + f"\n\n_No user schedules found for Block **{letter}**._")
+        return
+
+    # Send roster in tidy chunks to avoid the 2000-char limit
+    lines = roster
+    chunks = []
+    cur = "```\n"
+    for line in lines:
+        if len(cur) + len(line) + 2 > 1900:  # keep margin
+            cur += "```"
+            chunks.append(cur)
+            cur = "```\n"
+        cur += line + "\n"
+    cur += "```"
+    chunks.append(cur)
+
+    # First message: header + first chunk. Then any remaining chunks.
+    await inter.followup.send(header + "\n\n" + chunks[0])
+    for extra in chunks[1:]:
+        await inter.followup.send(extra)
 
 
 @tree.command(name="user", description="Show a user's stored schedule (users/<name>.json).")
