@@ -14,7 +14,7 @@ except Exception:
     pass
 
 # --- import your core logic (no side effects) ---
-from simple_rotation import (
+from scheduleLib import (
     day_status_and_order,
     get_current_block,
     jsonToCustomFormat,
