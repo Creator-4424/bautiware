@@ -106,7 +106,7 @@ async def period(inter: discord.Interaction):
         return
 
     order = res["order"]
-    label, letter = get_current_block(order, now=datetime.now().time())
+    label, letter, next_letter = get_current_block(order, now=datetime.now().time())
     extra = f" (Block {letter})" if letter else ""
     await inter.followup.send(
         f"{d}\nStatus: **Normal**\nCycle Day: **{res['cycle_day']}**\n"

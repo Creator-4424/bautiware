@@ -9,7 +9,8 @@ from scheduleLib import (
     get_today_order_and_status, get_current_block,
     day_status_and_order, compute_cycle_day,
     _anchor, school_days_between,
-    jsonToCustomFormat
+    jsonToCustomFormat,
+    load_from_file
 )
 
 # Optional helpers you had
@@ -54,7 +55,7 @@ def show_current():
 
     printb(f"Cycle Day: {res['cycle_day']}\n")
     printb(f"Schedule: {order}\n")
-    label, letter = get_current_block(order)
+    label, letter, next_letter = get_current_block(order)
     printb(f"Period: {label}\n")
 
     # Optional: per-user location for current block
@@ -62,10 +63,10 @@ def show_current():
         users_dir = Path("users")
         for p in users_dir.glob("*.json"):
             try:
-                data_str = jsonToCustomFormat(p)  # reuse formatter if you want pretty output per user
+                # data_str = jsonToCustomFormat(p)  # reuse formatter if you want pretty output per user
                 # Or just short line per user:
-                # data = load_from_file(p); name = data['Name']; cls, room = data[letter]
-                # printb(f"{name} is in {cls}, room {room}\n")
+                data = load_from_file(p); name = data['Name']; cls, room = data[letter]; next = data[next_letter][0]
+                print(f"{name} is in {cls}, room {room}. next class: {next}\n")
                 pass
             except Exception as e:
                 printb(f"{p.name}: {e}\n")
@@ -112,7 +113,7 @@ def main():
     play_track(pg, "2")  # default song
     clear()
 
-    printb(f"{a.main}\n", 0.0005)
+    print(f"{a.main}\n")
 
 
     print("welcome to bautiware V1.5")
