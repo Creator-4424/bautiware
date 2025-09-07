@@ -98,7 +98,7 @@ async def schedule(inter: discord.Interaction, when: str | None = None):
 @tree.command(name="period", description="Show the current period for today.")
 async def period(inter: discord.Interaction):
     await inter.response.defer(thinking=True)
-    d = date.today()
+    d = date(2025,9,5)
     res = day_status_and_order(d)
     if res["status"] != "Normal":
         note = f" — {res.get('note')}" if "note" in res else ""
