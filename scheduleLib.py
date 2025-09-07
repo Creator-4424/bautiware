@@ -109,7 +109,7 @@ def get_current_block(order: Optional[str],
                       now: Optional[time] = None) -> Tuple[str, Optional[str],Optional[str]]:
     if not order:
         return ("No classes (Weekend/Holiday)", None,None)
-    now = time(14,20)
+    now = datetime.now().time()
     b1,b2,b3,b4 = order[0], order[1], order[2], order[3]
 
     def between(a: tuple[int,int], b: tuple[int,int]) -> bool:
@@ -127,6 +127,6 @@ def get_current_block(order: Optional[str],
     else:                           return ("Out of schedule hours", None,None)
 
 def get_today_order_and_status() -> Tuple[date, Optional[str], Dict[str, Any]]:
-    t = date(2025,9,5)
+    t = date.today()
     res = day_status_and_order(t)
     return t, (res["order"] if res["status"] == "Normal" else None), res

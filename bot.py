@@ -30,7 +30,7 @@ USERS_DIR = Path("users")
 
 # ---------- helpers ----------
 def parse_date(s: str | None) -> date:
-    return date.fromisoformat(s) if s else date(2025,9,5)
+    return date.fromisoformat(s) if s else date.today()
 
 def list_usernames() -> list[str]:
     if not USERS_DIR.exists():
@@ -118,7 +118,7 @@ async def schedule(inter: discord.Interaction, when: str | None = None):
 async def period(inter: discord.Interaction):
     await inter.response.defer(thinking=True)
 
-    d = date(2025,9,5)
+    d = date.today()
     res = day_status_and_order(d)
 
     # Not a normal school day
@@ -128,13 +128,13 @@ async def period(inter: discord.Interaction):
         return
 
     order = res["order"]
-    label, letter, next_letter = get_current_block(order, now=time(14,20))
+    label, letter, next_letter = get_current_block(order, now=datetime.now().time())
 
     # If it's Lunch/ASA/etc. there is no block letter
     header = (
         f"**{d}**\n"
         f"Status: **Normal**  •  Cycle Day: **{res['cycle_day']}**  •  Order: **{order}**\n"
-        f"Current: **{label}**" + (f" (Block {letter})" if letter else "")
+        f"Current: **{label}**" + (f"" if letter else "")
     )
 
     if not letter:
