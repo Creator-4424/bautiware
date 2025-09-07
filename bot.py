@@ -118,7 +118,7 @@ async def schedule(inter: discord.Interaction, when: str | None = None):
 async def period(inter: discord.Interaction):
     await inter.response.defer(thinking=True)
 
-    d = date.today()
+    d = date(2025,9,5)
     res = day_status_and_order(d)
 
     # Not a normal school day
