@@ -1,0 +1,35 @@
+{
+    "Name": "emmett",
+    "A": [
+        "Math",
+        "A207"
+    ],
+    "B": [
+        "PE",
+        "Gym"
+    ],
+    "C": [
+        "Social Studies",
+        "A111"
+    ],
+    "D": [
+        "Spanish",
+        "A104"
+    ],
+    "E": [
+        "Narrative",
+        "Theater"
+    ],
+    "F": [
+        "Science",
+        "D113"
+    ],
+    "G": [
+        "Comp. Sci.",
+        "D210"
+    ],
+    "H": [
+        "English",
+        "A013"
+    ]
+}

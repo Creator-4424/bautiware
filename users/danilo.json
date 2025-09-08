@@ -1,0 +1,35 @@
+{
+    "Name": "danilo",
+    "A": [
+        "Math",
+        "A207"
+    ],
+    "B": [
+        "English",
+        "A015"
+    ],
+    "C": [
+        "Wind Ensemble",
+        "C103"
+    ],
+    "D": [
+        "Spanish",
+        "A226"
+    ],
+    "E": [
+        "Adv. Comp. Sci.",
+        "D210"
+    ],
+    "F": [
+        "Science",
+        "D113"
+    ],
+    "G": [
+        "Social Studies",
+        "A118"
+    ],
+    "H": [
+        "PE",
+        "Gym"
+    ]
+}

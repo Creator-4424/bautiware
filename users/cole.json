@@ -1,0 +1,35 @@
+{
+    "Name": "cole",
+    "A": [
+        "Drawing & Painting",
+        "C001"
+    ],
+    "B": [
+        "Science",
+        "D113"
+    ],
+    "C": [
+        "English",
+        "A013"
+    ],
+    "D": [
+        "Spanish",
+        "A104"
+    ],
+    "E": [
+        "Math",
+        "A210"
+    ],
+    "F": [
+        "Social Studies",
+        "A118"
+    ],
+    "G": [
+        "Comp. Sci.",
+        "D210"
+    ],
+    "H": [
+        "PE",
+        "Gym"
+    ]
+}

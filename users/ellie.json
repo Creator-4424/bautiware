@@ -1,0 +1,35 @@
+{
+    "Name": "ellie",
+    "A": [
+        "Math",
+        "A207"
+    ],
+    "B": [
+        "PE",
+        "Gym"
+    ],
+    "C": [
+        "Wind Ensemble",
+        "C103"
+    ],
+    "D": [
+        "Science",
+        "D113"
+    ],
+    "E": [
+        "English",
+        "A118"
+    ],
+    "F": [
+        "Social Studies",
+        "A118"
+    ],
+    "G": [
+        "Spanish",
+        "A226"
+    ],
+    "H": [
+        "Digital Arts",
+        "C003"
+    ]
+}
