@@ -110,13 +110,13 @@ def main():
     print("Loading...", end="\r"); t.sleep(1.0)
     printb("Software ready\n"); t.sleep(0.3)
     pg = safe_audio_init()
-    play_track(pg, "2")  # default song
+    play_track(pg, "1")  # default song
     clear()
 
     print(f"{a.main}\n")
 
 
-    print("welcome to bautiware V1.5")
+    print("welcome to bautiware V1.6")
     while True:
         printb("\nActions:\n1: Get current date data\n2: Get anchor data\n3: Change music\n\nEnter a date (YYYY-MM-DD) or a name for their schedule (q to quit)\n", 0.01)
         action = input("> ").strip()
