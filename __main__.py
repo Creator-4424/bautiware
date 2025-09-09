@@ -18,6 +18,10 @@ from printf import printb
 from cls import clear
 import ascii as a
 
+BASE_DIR = Path(__file__).resolve().parent
+USERS_DIR = BASE_DIR / "users"
+MUSIC_DIR = BASE_DIR / "music"
+
 # ---------- audio guarded ----------
 def safe_audio_init():
     try:
@@ -34,7 +38,7 @@ def safe_audio_init():
 def play_track(pg, n: str | int = "2"):
     if not pg: return
     try:
-        pg.mixer.music.load(os.path.join("music", f"track{n}.mp3"))
+        pg.mixer.music.load(os.path.join(MUSIC_DIR, f"track{n}.mp3"))
         pg.mixer.music.play(-1)
     except Exception as e:
         print(f"[audio] {e}")
@@ -60,7 +64,7 @@ def show_current():
 
     # Optional: per-user location for current block
     if letter:
-        users_dir = Path("users")
+        users_dir = Path(USERS_DIR)
         for p in users_dir.glob("*.json"):
             try:
                 # data_str = jsonToCustomFormat(p)  # reuse formatter if you want pretty output per user
