@@ -32,8 +32,8 @@ LOCAL_TZ = ZoneInfo("Europe/Madrid")
 
 # ---------- helpers ----------
 def current_time():
-    # return datetime.now(LOCAL_TZ).time()
-    return time(12,20)
+    return datetime.now(LOCAL_TZ).time() # normal time
+    # return time(12,20) # manual time
 def parse_date(s: str | None) -> date:
     return date.fromisoformat(s) if s else date.today()
 
