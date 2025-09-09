@@ -131,7 +131,7 @@ async def period(inter: discord.Interaction):
         return
 
     order = res["order"]
-    label, letter, next_letter = get_current_block(order, now=datetime.now().time())
+    label, letter, next_letter = get_current_block(order, now=time(13,30))
 
     # If it's Lunch/ASA/etc. there is no block letter
     header = (
