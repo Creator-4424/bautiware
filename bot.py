@@ -147,7 +147,6 @@ async def period(inter: discord.Interaction):
 
     if not letter:
         await inter.followup.send(header + "\n\n_No active class block right now._")
-        return
 
     # Build roster for the current block
     roster = build_class_roster(letter,order)
