@@ -30,7 +30,7 @@ USERS_DIR = Path("users")
 
 # ---------- helpers ----------
 def current_time():
-    return datetime.now.time()
+    return datetime.now().time()
 def parse_date(s: str | None) -> date:
     return date.fromisoformat(s) if s else date.today()
 
