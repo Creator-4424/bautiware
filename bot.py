@@ -48,7 +48,8 @@ def _load_user(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
 
-def build_class_roster(current_letter: str | None, order: str) -> list[str]:
+def build_class_roster(current_letter: str | None, order: str,next_block: str | None) -> list[str]:
+
     """
     Returns lines like:
     'Name — CurrentClass (Room 101) → Next: NextClass (Room 202)'
@@ -67,7 +68,7 @@ def build_class_roster(current_letter: str | None, order: str) -> list[str]:
             next_letter = None
     else:
         # If there's no active block, just pick the first block after "now"
-        next_letter = order[0] if order else None
+        next_letter = next_block
 
     # Loop through every user
     for p in sorted(USERS_DIR.glob("*.json"), key=lambda x: x.stem.lower()):
@@ -141,7 +142,7 @@ async def period(inter: discord.Interaction):
     # If it's Lunch/ASA/etc. there is no block letter
     header = (
         f"**{d}**\n"
-        f"**{current_time()}**"
+        f"**{current_time()}**\n"
         f"Status: **Normal**  •  Cycle Day: **{res['cycle_day']}**  •  Order: **{order}**\n"
         f"Current: **{label}**" + (f"" if letter else "")
     )
@@ -150,7 +151,7 @@ async def period(inter: discord.Interaction):
         await inter.followup.send(header + "\n\n_No active class block right now._")
 
     # Build roster for the current block
-    roster = build_class_roster(letter,order)
+    roster = build_class_roster(letter,order,next_letter)
 
     if not roster:
         await inter.followup.send(header + f"\n\n_No user schedules found for Block **{letter}**._")
