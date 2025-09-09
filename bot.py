@@ -6,6 +6,7 @@ from pathlib import Path
 import discord
 from discord import app_commands
 import json
+from zoneinfo import ZoneInfo
 # load .env locally (Railway uses env vars directly, this is harmless)
 try:
     from dotenv import load_dotenv  # optional
@@ -27,10 +28,11 @@ tree = app_commands.CommandTree(bot)
 
 USERS_DIR = Path("users")
 
+LOCAL_TZ = ZoneInfo("Europe/Madrid")
 
 # ---------- helpers ----------
 def current_time():
-    return datetime.now().time()
+    return datetime.now(LOCAL_TZ).time()
 def parse_date(s: str | None) -> date:
     return date.fromisoformat(s) if s else date.today()
 
