@@ -109,7 +109,6 @@ def get_current_block(order: Optional[str],
                       now: Optional[time] = None) -> Tuple[str, Optional[str],Optional[str]]:
     if not order:
         return ("No classes (Weekend/Holiday)", None,None)
-    now = time(13,30)
     b1,b2,b3,b4 = order[0], order[1], order[2], order[3]
 
     def between(a: tuple[int,int], b: tuple[int,int]) -> bool:

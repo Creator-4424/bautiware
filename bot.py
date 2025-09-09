@@ -29,6 +29,8 @@ USERS_DIR = Path("users")
 
 
 # ---------- helpers ----------
+def current_time():
+    return datetime.now.time()
 def parse_date(s: str | None) -> date:
     return date.fromisoformat(s) if s else date.today()
 
@@ -131,11 +133,12 @@ async def period(inter: discord.Interaction):
         return
 
     order = res["order"]
-    label, letter, next_letter = get_current_block(order, now=time(13,30))
+    label, letter, next_letter = get_current_block(order, now=current_time())
 
     # If it's Lunch/ASA/etc. there is no block letter
     header = (
         f"**{d}**\n"
+        f"**{current_time()}**"
         f"Status: **Normal**  •  Cycle Day: **{res['cycle_day']}**  •  Order: **{order}**\n"
         f"Current: **{label}**" + (f"" if letter else "")
     )
