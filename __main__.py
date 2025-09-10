@@ -65,16 +65,29 @@ def show_current():
     # Optional: per-user location for current block
     if letter:
         users_dir = Path(USERS_DIR)
+        # ensure we have a next_letter; if not, compute from today's order
+        if not next_letter and letter in order:
+            i = order.index(letter)
+            next_letter = order[(i + 1) % len(order)]
+
         for p in users_dir.glob("*.json"):
             try:
-                # data_str = jsonToCustomFormat(p)  # reuse formatter if you want pretty output per user
-                # Or just short line per user:
-                data = load_from_file(p); name = data['Name']; cls, room = data[letter]; next = data[next_letter][0]
-                print(f"{name} is in {cls}, room {room}. next class: {next}\n")
-                pass
+                data = load_from_file(p)
+                name = data['Name']
+
+                # current class (safe)
+                cls, room = data.get(letter, [None, None])
+
+                # next class (safe)
+                if next_letter and next_letter in data:
+                    next_cls, next_room = data[next_letter]
+                    next_str = f"{next_cls} (room {next_room})"
+                else:
+                    next_str = "—"
+
+                print(f"{name} is in {cls}, room {room}. next class: {next_str}\n")
             except Exception as e:
                 printb(f"{p.name}: {e}\n")
-
 def show_anchor():
     clear()
     anchor_date, anchor_day = _anchor(CONFIG)
