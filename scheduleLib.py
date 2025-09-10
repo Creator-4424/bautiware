@@ -115,7 +115,7 @@ def get_current_block(order: Optional[str],
 
     def between(a: tuple[int,int], b: tuple[int,int]) -> bool:
         return time(*a) <= now <= time(*b)
-    if between((0),(8,44)): return ("Out of schedule hours", None,b1)
+    if between((0,0),(8,44)): return ("Out of schedule hours", None,b1)
     elif   between((8,45),(10,5)):   return (f"Block {b1}", b1,b2)
     elif between((10,6),(10,54)):  return ("Multipurpose time", None,b2)
     elif between((10,55),(12,14)): return (f"Block {b2}", b2,b3)
