@@ -78,6 +78,11 @@ def is_half_day(d: date, cfg: Dict[str, Any] = CONFIG) -> bool:
 def is_school_day(d: date, cfg: Dict[str, Any] = CONFIG) -> bool:
     return (not is_weekend(d, cfg)) and (is_holiday(d, cfg) is None)
 
+def next_school_day(d=date.today(), cfg=CONFIG) -> date:
+    cur = d + timedelta(days=1)
+    while not is_school_day(cur, cfg):
+        cur += timedelta(days=1)
+    return cur
 def school_days_between(start: date, end: date, cfg: Dict[str, Any] = CONFIG) -> int:
     cur, count = start, 0
     while cur < end:
@@ -92,6 +97,7 @@ def compute_cycle_day(target: date, cfg: Dict[str, Any] = CONFIG) -> Optional[in
     passed = school_days_between(start_date, target, cfg)
     day = ((day - 1 + passed) % rot_len) + 1
     return day if is_school_day(target, cfg) else None
+
 
 def day_status_and_order(target: date, cfg: Dict[str, Any] = CONFIG) -> Dict[str, Any]:
     note = is_holiday(target, cfg)
@@ -111,6 +117,7 @@ def get_current_block(order: Optional[str],
         return ("No classes (Weekend/Holiday)", None,None)
     if not now:
         now=datetime.now().time()
+        # now =time(16,25)
     b1,b2,b3,b4 = order[0], order[1], order[2], order[3]
 
     def between(a: tuple[int,int], b: tuple[int,int]) -> bool:
@@ -128,6 +135,7 @@ def get_current_block(order: Optional[str],
     else:                           return ("Out of schedule hours", None,None)
 
 def get_today_order_and_status() -> Tuple[date, Optional[str], Dict[str, Any]]:
+    # t = date(2025,9,13)
     t = date.today()
     res = day_status_and_order(t)
     return t, (res["order"] if res["status"] == "Normal" else None), res

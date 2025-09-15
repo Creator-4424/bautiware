@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import date, datetime
+from datetime import date, datetime, time
 from pathlib import Path
 import os, sys, time as t
 
@@ -10,7 +10,8 @@ from scheduleLib import (
     day_status_and_order, compute_cycle_day,
     _anchor, school_days_between,
     jsonToCustomFormat,
-    load_from_file
+    load_from_file,
+    next_school_day
 )
 
 # Optional helpers you had
@@ -18,6 +19,7 @@ from printf import printb
 from cls import clear
 import ascii as a
 
+AFTER_SCHOOL_CUTOFF = time(15, 50)
 BASE_DIR = Path(__file__).resolve().parent
 USERS_DIR = BASE_DIR / "users"
 MUSIC_DIR = BASE_DIR / "music"
@@ -53,41 +55,90 @@ def show_current():
         printb("WARNING: CURRENT DATE IS BEFORE ANCHOR, DATA UNRELIABLE\n")
 
     printb(f"Status: {res['status']}\n")
-    if 'note' in res: printb(f"Note: {res['note']}\n")
+    if 'note' in res:
+        printb(f"Note: {res['note']}\n")
     if res["status"] != "Normal":
+        nd = next_school_day(today, CONFIG)
+        nres = day_status_and_order(nd, CONFIG)
+        if nres["status"] == "Normal":
+            next_letter = nres["order"][0]
+            printb(f"Next school day: {nd} (Order {nres['order']})\n")
+
+        users_dir = Path(USERS_DIR)
+        if not users_dir.exists():
+            printb("No users directory found.\n")
+            return
+
+        # Print ONLY the next class for everyone
+        had_any = False
+        for p in users_dir.glob("*.json"):
+            try:
+                data = load_from_file(p)
+                name = data.get('Name', p.stem)
+                nxt_cls, nxt_room = data.get(next_letter, [None, None])
+                if nxt_cls:
+                    print(f"{name} → Next: {nxt_cls} (room {nxt_room})")
+                else:
+                    print(f"{name} → Next: —")
+                had_any = True
+            except Exception as e:
+                printb(f"{p.name}: {e}\n")
+
+        if not had_any:
+            printb("No user schedules found.\n")
         return
 
     printb(f"Cycle Day: {res['cycle_day']}\n")
     printb(f"Schedule: {order}\n")
-    label, letter, next_letter = get_current_block(order)
+
+    now = datetime.now().time()
+    gb = get_current_block(order, now=now)
+    if isinstance(gb, tuple) and len(gb) == 3:
+        label, letter, next_letter = gb
+    else:
+        label, letter = gb
+        next_letter = None
+
     printb(f"Period: {label}\n")
 
-    # Optional: per-user location for current block
-    if letter:
-        users_dir = Path(USERS_DIR)
-        # ensure we have a next_letter; if not, compute from today's order
-        if not next_letter and letter in order:
+    # If school is over → jump to *next school day* and take its first block
+    if now >= AFTER_SCHOOL_CUTOFF:
+        nd = next_school_day(today, CONFIG)
+        nres = day_status_and_order(nd, CONFIG)
+        if nres["status"] == "Normal":
+            next_letter = nres["order"][0]
+            printb(f"Next school day: {nd} (Order {nres['order']})\n")
+
+    # Fallback if still no next_letter
+    if not next_letter and order:
+        if letter and letter in order:
             i = order.index(letter)
             next_letter = order[(i + 1) % len(order)]
+        else:
+            next_letter = order[0]
 
-        for p in users_dir.glob("*.json"):
-            try:
-                data = load_from_file(p)
-                name = data['Name']
+    users_dir = Path(USERS_DIR)
+    if not users_dir.exists():
+        printb("No users directory found.\n")
+        return
 
-                # current class (safe)
-                cls, room = data.get(letter, [None, None])
+    # Print ONLY the next class for everyone
+    had_any = False
+    for p in users_dir.glob("*.json"):
+        try:
+            data = load_from_file(p)
+            name = data.get('Name', p.stem)
+            nxt_cls, nxt_room = data.get(next_letter, [None, None])
+            if nxt_cls:
+                print(f"{name} → Next: {nxt_cls} (room {nxt_room})")
+            else:
+                print(f"{name} → Next: —")
+            had_any = True
+        except Exception as e:
+            printb(f"{p.name}: {e}\n")
 
-                # next class (safe)
-                if next_letter and next_letter in data:
-                    next_cls, next_room = data[next_letter]
-                    next_str = f"{next_cls} (room {next_room})"
-                else:
-                    next_str = "—"
-
-                print(f"{name} is in {cls}, room {room}. next class: {next_str}\n")
-            except Exception as e:
-                printb(f"{p.name}: {e}\n")
+    if not had_any:
+        printb("No user schedules found.\n")
 def show_anchor():
     clear()
     anchor_date, anchor_day = _anchor(CONFIG)
@@ -134,6 +185,7 @@ def main():
 
 
     print("welcome to bautiware V1.6")
+    print(f"next: {next_school_day()}")
     while True:
         printb("\nActions:\n1: Get current date data\n2: Get anchor data\n3: Change music\n\nEnter a date (YYYY-MM-DD) or a name for their schedule (q to quit)\n", 0.01)
         action = input("> ").strip()
