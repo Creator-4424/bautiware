@@ -57,10 +57,18 @@ def show_current():
     printb(f"Status: {res['status']}\n")
     if 'note' in res:
         printb(f"Note: {res['note']}\n")
-    if res["status"] != "Normal":
+    if res["status"] == "Half Day":
         nd = next_school_day(today, CONFIG)
         nres = day_status_and_order(nd, CONFIG)
         if nres["status"] == "Normal":
+            next_letter = nres["order"][0]
+            printb(f"Next school day: {nd} (Order {nres['order']})\n")
+        
+    if res["status"] != "Normal":
+        nd = next_school_day(today, CONFIG)
+        nres = day_status_and_order(nd, CONFIG)
+        if nres["status"] == "Normal" or nres["status"] == "Half Day":
+            print("test")
             next_letter = nres["order"][0]
             printb(f"Next school day: {nd} (Order {nres['order']})\n")
 
@@ -90,8 +98,8 @@ def show_current():
 
     printb(f"Cycle Day: {res['cycle_day']}\n")
     printb(f"Schedule: {order}\n")
-
     now = datetime.now().time()
+    # now = time(17)
     gb = get_current_block(order, now=now)
     if isinstance(gb, tuple) and len(gb) == 3:
         label, letter, next_letter = gb
@@ -105,7 +113,7 @@ def show_current():
     if now >= AFTER_SCHOOL_CUTOFF:
         nd = next_school_day(today, CONFIG)
         nres = day_status_and_order(nd, CONFIG)
-        if nres["status"] == "Normal":
+        if nres["status"] == "Normal" or nres["status"] == "Half Day":
             next_letter = nres["order"][0]
             printb(f"Next school day: {nd} (Order {nres['order']})\n")
 

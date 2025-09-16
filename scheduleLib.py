@@ -135,7 +135,7 @@ def get_current_block(order: Optional[str],
     else:                           return ("Out of schedule hours", None,None)
 
 def get_today_order_and_status() -> Tuple[date, Optional[str], Dict[str, Any]]:
-    # t = date(2025,9,13)
+    # t = date(2025,9,16)
     t = date.today()
     res = day_status_and_order(t)
     return t, (res["order"] if res["status"] == "Normal" else None), res
