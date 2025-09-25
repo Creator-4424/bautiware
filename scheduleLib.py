@@ -133,6 +133,25 @@ def get_current_block(order: Optional[str],
     elif between((15,51),(15,59)): return ("ASA transition", None,None)
     elif between((16,0),(17,0)):   return ("ASAs in session", None,None)
     else:                           return ("Out of schedule hours", None,None)
+def get_half_block(order: Optional[str], now: Optional[time] = None) -> Tuple[str, Optional[str],Optional[str]]:
+    if not order:
+        return ("No classes (Weekend/Holiday)", None,None)
+    now = datetime.now().time()
+    b1,b2,b3,b4 = order[0], order[1], order[2], order[3]
+
+    def between(a: tuple[int,int], b: tuple[int,int]) -> bool:
+        return time(*a) <= now <= time(*b)
+    if   between((8,45),(9,35)):   return (f"Block {b1}", b1,b2)
+    elif between((9,36),(9,49)):  return ("Break", None,b2)
+    elif between((9,50),(10,40)): return (f"Block {b2}", b2,b3)
+    elif between((10,41),(10,44)):  return ("Passing Period", None,b3)
+    elif between((10,45),(11,34)):  return (f"Block {b3}", b3,b4)
+    elif between((11,35),(12,24)): return ("Lunch", None,b4)
+    elif between((12,25),(13,14)): return (f"Block {b4}", b4,None)
+    elif between((13,15),(14,0)): return ("Community Meeting :(", None,None)
+    elif between((14,1),(15,0)):   return ("ASAs in session", None,None)
+    else:                           return ("Out of schedule hours", None,None)
+
 
 def get_today_order_and_status() -> Tuple[date, Optional[str], Dict[str, Any]]:
     # t = date(2025,9,16)

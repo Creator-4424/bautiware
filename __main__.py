@@ -11,7 +11,8 @@ from scheduleLib import (
     _anchor, school_days_between,
     jsonToCustomFormat,
     load_from_file,
-    next_school_day
+    next_school_day,
+    get_half_block
 )
 
 # Optional helpers you had
@@ -100,7 +101,10 @@ def show_current():
     printb(f"Schedule: {order}\n")
     now = datetime.now().time()
     # now = time(17)
-    gb = get_current_block(order, now=now)
+    if res["status"] == "Normal":
+        gb = get_current_block(order, now=now)
+    if res["status"] == "Half Day":
+        gb = get_half_block(order, now=now)
     if isinstance(gb, tuple) and len(gb) == 3:
         label, letter, next_letter = gb
     else:
