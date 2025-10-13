@@ -111,8 +111,7 @@ def day_status_and_order(target: date, cfg: Dict[str, Any] = CONFIG) -> Dict[str
         return {"status": "Half Day", "cycle_day": cd, "order": order}
     return {"status": "Normal", "cycle_day": cd, "order": order}
 
-def get_current_block(order: Optional[str],
-                      now: Optional[time] = None) -> Tuple[str, Optional[str],Optional[str]]:
+def get_current_block(order: Optional[str], now: Optional[time] = None) -> Tuple[str, Optional[str],Optional[str]]:
     if not order:
         return ("No classes (Weekend/Holiday)", None,None)
     if not now:
