@@ -7,6 +7,8 @@ import discord
 from discord import app_commands
 import json
 from zoneinfo import ZoneInfo
+import threading
+from flask import Flask
 # load .env locally (Railway uses env vars directly, this is harmless)
 try:
     from dotenv import load_dotenv  # optional
@@ -215,9 +217,21 @@ async def on_app_cmd_error(interaction: discord.Interaction, error: Exception):
     except Exception as e:
         print("[error notify failed]", e)
 
-
 # ---------- entry ----------
 if __name__ == "__main__":
+    # === keep-alive flask server for Render ===
+    def keep_alive():
+        app = Flask("keep_alive")
+
+        @app.route("/")
+        def home():
+            return "Bautiware bot active."
+
+        app.run(host="0.0.0.0", port=int(os.getenv("PORT", 8080)))
+
+    threading.Thread(target=keep_alive).start()
+    # ==========================================
+
     token = os.getenv("DISCORD_TOKEN")
     if not token:
         raise SystemExit("Set DISCORD_TOKEN env var.")
