@@ -21,6 +21,8 @@ from scheduleLib import (
     day_status_and_order,
     get_current_block,
     jsonToCustomFormat,
+    get_half_block,
+    next_school_day
 )
 
 # ---------- Discord client / command tree ----------
@@ -29,7 +31,7 @@ bot = discord.Client(intents=intents)
 tree = app_commands.CommandTree(bot)
 
 USERS_DIR = Path("users")
-
+AFTER_SCHOOL_CUTOFF = time(15, 50)
 LOCAL_TZ = ZoneInfo("Europe/Madrid")
 
 # ---------- helpers ----------
@@ -125,46 +127,59 @@ async def schedule(inter: discord.Interaction, when: str | None = None):
     await inter.followup.send(msg)
 
 
-@tree.command(name="period", description="Show the current period for today, plus everyone’s class.")
+@tree.command(name="period", description="Show current and next class for all users.")
 async def period(inter: discord.Interaction):
     await inter.response.defer(thinking=True)
 
     d = date.today()
     res = day_status_and_order(d)
 
-    # Not a normal school day
-    if res["status"] != "Normal":
-        note = f" — {res.get('note')}" if "note" in res else ""
+    if res["status"] not in ("Normal", "Half Day"):
+        note = f" — {res.get('note', '')}"
         await inter.followup.send(f"{d}: **{res['status']}**{note}")
         return
 
     order = res["order"]
-    label, letter, next_letter = get_current_block(order, now=current_time())
+    now = current_time()
 
-    # If it's Lunch/ASA/etc. there is no block letter
-    header = (
-        f"**{d}**\n"
-        f"**{current_time()}**\n"
-        f"Status: **Normal**  •  Cycle Day: **{res['cycle_day']}**  •  Order: **{order}**\n"
-        f"Current: **{label}**" + (f"" if letter else "")
+    gb = (
+        get_half_block(order, now=now)
+        if res["status"] == "Half Day"
+        else get_current_block(order, now=now)
     )
 
-    if not letter:
-        await inter.followup.send(header + "\n\n_No active class block right now._")
+    # --- unpack safe ---
+    label, letter, next_letter = (gb + (None,) * (3 - len(gb)))[:3]
 
-    # Build roster for the current block
-    roster = build_class_roster(letter,order,next_letter)
+    # after school → move to next school day
+    if now >= AFTER_SCHOOL_CUTOFF or not next_letter:
+        nd = next_school_day(d)
+        nres = day_status_and_order(nd)
+        if nres["status"] in ("Normal", "Half Day"):
+            next_letter = nres["order"][0]
+            next_date = nd
+        else:
+            next_date = None
+    else:
+        next_date = None
 
+    header = (
+        f"**{d}**  |  {now.strftime('%H:%M')}\n"
+        f"Status: **{res['status']}**  •  Cycle Day: **{res['cycle_day']}**  •  Order: **{order}**\n"
+        f"Current: **{label}**\n"
+    )
+    if next_date:
+        header += f"Next school day: **{next_date}** (Order {nres['order']})\n"
+
+    roster = build_class_roster(letter, order, next_letter)
     if not roster:
-        await inter.followup.send(header + f"\n\n_No user schedules found for Block **{letter}**._")
+        await inter.followup.send(header + "\n_No user schedules found._")
         return
 
-    # Send roster in tidy chunks to avoid the 2000-char limit
-    lines = roster
     chunks = []
     cur = "```\n"
-    for line in lines:
-        if len(cur) + len(line) + 2 > 1900:  # keep margin
+    for line in roster:
+        if len(cur) + len(line) + 2 > 1900:
             cur += "```"
             chunks.append(cur)
             cur = "```\n"
@@ -172,11 +187,9 @@ async def period(inter: discord.Interaction):
     cur += "```"
     chunks.append(cur)
 
-    # First message: header + first chunk. Then any remaining chunks.
     await inter.followup.send(header + "\n\n" + chunks[0])
     for extra in chunks[1:]:
         await inter.followup.send(extra)
-
 
 @tree.command(name="user", description="Show a user's stored schedule (users/<name>.json).")
 @app_commands.describe(name="User name (file without .json)")

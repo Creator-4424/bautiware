@@ -152,8 +152,8 @@ def get_half_block(order: Optional[str], now: Optional[time] = None) -> Tuple[st
     else:                           return ("Out of schedule hours", None,None)
 
 
-def get_today_order_and_status() -> Tuple[date, Optional[str], Dict[str, Any]]:
-    # t = date(2025,9,16)
+def get_today_order_and_status():
     t = date.today()
     res = day_status_and_order(t)
-    return t, (res["order"] if res["status"] == "Normal" else None), res
+    order = res.get("order") if res["status"] in ("Normal", "Half Day") else None
+    return t, order, res
