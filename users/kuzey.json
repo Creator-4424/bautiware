@@ -1,0 +1,35 @@
+{
+    "Name": "kuzey",
+    "A": [
+        "Math",
+        "A207"
+    ],
+    "B": [
+        "Science",
+        "D113"
+    ],
+    "C": [
+        "English",
+        "A013"
+    ],
+    "D": [
+        "Social Studies",
+        "A118"
+    ],
+    "E": [
+        "Adv. Comp. Sci.",
+        "D210"
+    ],
+    "F": [
+        "Jazz ensemble",
+        "C103"
+    ],
+    "G": [
+        "P.E.",
+        "Gym"
+    ],
+    "H": [
+        "Spanish",
+        "A226"
+    ]
+}
