@@ -1,0 +1,35 @@
+{
+    "Name": "paz",
+    "A": [
+        "Spanish",
+        "A110"
+    ],
+    "B": [
+        "P.E.",
+        "Gym"
+    ],
+    "C": [
+        "English",
+        "A015"
+    ],
+    "D": [
+        "Drawing & Painting",
+        "C001"
+    ],
+    "E": [
+        "Math",
+        "A207"
+    ],
+    "F": [
+        "Mandarin",
+        "A208"
+    ],
+    "G": [
+        "Social Studies",
+        "A118"
+    ],
+    "H": [
+        "Science",
+        "D113"
+    ]
+}
