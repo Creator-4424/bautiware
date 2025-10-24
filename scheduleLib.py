@@ -47,7 +47,7 @@ def jsonToCustomFormat(json_filename: str | Path) -> str:
     for block in string.ascii_uppercase[:8]:
         subj, room = data[block]
         out.append(f"{block} | {subj:15s} | Room: {room}")
-    out.extend(["", "=" * 40])
+    out.extend(["", "=" * 50])
     return "\n".join(out)
 
 # ----------------- Core helpers -----------------
