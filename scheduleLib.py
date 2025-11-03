@@ -12,6 +12,8 @@ CONFIG: Dict[str, Any] = {
     "school_weekdays": {0, 1, 2, 3, 4},
     "holidays": [
         {"date":"2025-10-13", "note":"dia de la hispanidad"},
+        {"date":"2025-10-30", "note":"Teacher Conferences"},
+        {"date":"2025-10-31", "note":"Teacher Conferences"},
         {"date":"2025-11-10", "note":"3 day weekend"},
         {"date":"2025-12-08", "note":"3 day weekend"},
         {"date":"2026-05-01", "note":"3 day weekend"},
